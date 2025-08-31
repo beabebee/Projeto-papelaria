@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <h1>Clientes</h1>
+    
+    <!--Novo cliente-->
+    <a href="{{ url_for('cadastrar_cliente') }}" class="btn-novo">+ Novo Cliente</a>
+
+    <!--Listagem de clientes-->
+    <table class="tabela-clientes">
+        <thead>
+            <tr>
+                <th>Nome</th>
+                <th>Email</th>
+                <th>Telefone</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for cliente in clientes %}
+            <tr>
+                <td>{{ cliente.nome }}</td>
+                <td>{{ cliente.email }}</td>
+                <td>{{ cliente.telefone }}</td>
+                <td class="acoes">
+                    <a href="{{ url_for('editar_cliente', id=cliente.id) }}" class="btn-editar">Editar</a>
+                    <form action="{{ url_for('deletar_cliente', id=cliente.id) }}" method="POST" class="form-deletar">
+                        <button type="submit" class="btn-excluir">Excluir</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Botão para voltar (vou fazer nas outras páginas também) -->
+    <div class="rodape-tabela">
+        <a href="{{ url_for('home') }}" class="btn-voltar">
+            ← Voltar à Página Inicial
+        </a>
+    </div>
+</div>
+{% endblock %}

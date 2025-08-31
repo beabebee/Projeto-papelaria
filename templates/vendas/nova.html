@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <h1>Nova Venda</h1>
+    
+    <!--Método post para criar nova venda-->
+    <form method="POST" class="form-venda">
+        <div class="form-group">
+            <label for="cliente_id">Cliente:</label>
+            <select id="cliente_id" name="cliente_id" required>
+                {% for cliente in clientes %}
+                <option value="{{ cliente.id }}">{{ cliente.nome }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label for="produto_id">Produto:</label>
+            <select id="produto_id" name="produto_id" required>
+                {% for produto in produtos %}
+                <option value="{{ produto.id }}">{{ produto.nome }} (Estoque: {{ produto.quantidade }})</option>
+                {% endfor %}
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label for="quantidade">Quantidade:</label>
+            <input type="number" id="quantidade" name="quantidade" min="1" required>
+        </div>
+        
+        <button type="submit" class="btn-salvar">Registrar Venda</button>
+        <a href="{{ url_for('listar_vendas') }}" class="btn-cancelar">Cancelar</a>
+    </form>
+</div>
+{% endblock %}

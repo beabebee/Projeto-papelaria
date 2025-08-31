@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block title %}Página Inicial{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>Bem-vindo ao Sistema da Papelaria</h1>
+    <p class="subtitulo">Gerencie produtos, clientes e vendas de forma eficiente.</p>
+
+    <!--Botões que levam as rotas (com cadastro, listagem, edição e exclusão)-->
+    <div class="menu-principal">
+        <a href="{{ url_for('listar_produtos') }}" class="botao-menu">
+            📦 Produtos
+        </a>
+        <a href="{{ url_for('listar_clientes') }}" class="botao-menu">
+            👥 Clientes
+        </a>
+        <a href="{{ url_for('listar_vendas') }}" class="botao-menu">
+            💰 Vendas
+        </a>
+    </div>
+</div>
+{% endblock %}

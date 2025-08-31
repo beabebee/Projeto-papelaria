@@ -1,0 +1,20 @@
+{% extends "base.html" %} {% block content %}
+<div class="container-auth">
+  <h1>Redefinir Senha</h1>
+
+  <!--Formulário para redefinição de senha-->
+  <form method="POST" class="form-auth">
+    <div class="form-group">
+      <label for="senha">Nova Senha:</label>
+      <input type="password" id="senha" name="senha" required />
+    </div>
+
+    <button type="submit" class="btn-auth">Redefinir Senha</button>
+  </form>
+
+  <!--Se já tiver cadastro, o usuário pode ir para a tela de login-->
+  <div class="auth-links">
+    <a href="{{ url_for('login') }}">Já tem conta? Faça login</a>
+  </div>
+</div>
+{% endblock %}

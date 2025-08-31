@@ -1,0 +1,99 @@
+{% extends "base.html" %} {% block content %}
+<div class="container">
+  <h1>Suporte</h1>
+
+  <form method="POST" class="form-group border-form">
+    <input type="hidden" name="destinatario" value="{{ mail_owner }}" />
+    <input
+      type="hidden"
+      name="data_hora"
+      value="{{ data_hora.strftime('%d/%m/%Y %H:%M:%S') }}"
+    />
+    <div class="form-group">
+      <label for="solicitante">Remetente</label>
+      <input
+        type="text"
+        name="solicitante"
+        id="solicitante"
+        class="form-control"
+        value="{{ current_user.email if current_user.is_authenticated else '' }}"
+        placeholder="Seu email"
+        {%
+        if
+        current_user.is_authenticated
+        %}readonly{%
+        endif
+        %}
+      />
+      <div class="form-group"></div>
+
+      <label for="assunto">Assunto</label>
+      <select name="assunto" id="assunto" class="form-control">
+        <option value="erro_sistema">Erro no sistema</option>
+        <option value="problemas_cadastro">
+          Problemas no cadastro de produtos
+        </option>
+        <option value="problema_acesso">
+          Problema de acesso (login/senha)
+        </option>
+        <option value="lentidao_instabilidade">
+          Lentidão ou instabilidade no sistema
+        </option>
+        <option value="solicitacao_suporte">
+          Solicitação de suporte remoto
+        </option>
+        <option value="sugestao_melhoria">
+          Sugestão de melhoria no sistema
+        </option>
+        <option value="duvidas_sistema">Dúvidas sobre o sistema</option>
+        <option value="pedido_exclusao">
+          Pedido de exclusão ou criação de conta
+        </option>
+        <option value="solicitacao_ferias">
+          Solicitação de férias/ausência
+        </option>
+        <option value="alteracao_informacoes">
+          Alteração de informações cadastrais
+        </option>
+        <option value="comunicacao_problema">
+          Comunicação de problema interno
+        </option>
+        <option value="pedido_material">Pedido de material ou recurso</option>
+        <option value="duvidas_politicas">
+          Dúvidas sobre políticas da empresa
+        </option>
+        <option value="reclamacao_feedback">Reclamação ou feedback</option>
+        <option value="comunicacao_geral">
+          Comunicação geral ou aviso importante
+        </option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label for="mensagem">Mensagem</label>
+      <textarea
+        name="mensagem"
+        id="mensagem"
+        class="form-control"
+        rows="5"
+        required
+        style="resize: none"
+        placeholder="Descreva seu problema ou dúvida aqui..."
+      ></textarea>
+    </div>
+
+    <button type="submit" class="btn btn-voltar">Enviar</button>
+  </form>
+
+  <div class="text-center mt-4">
+    {% if current_user.is_authenticated %}
+    <a href="{{ url_for('home') }}" class="btn-voltar">
+      ← Voltar à Página Inicial
+    </a>
+    {% endif %} {% if not current_user.is_authenticated %}
+    <a href="{{ url_for('login') }}" class="btn-voltar">
+      ← Voltar à Página de Login
+    </a>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{% block title %}Papelaria Arte e Papel{% endblock %}</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/style.css') }}"
+    />
+  </head>
+  <body>
+    <header>
+      <!--O flask trata as imagens de forma diferente-->
+      <img
+        src="{{ url_for('static', filename='images/logo.jpg') }}"
+        class="logo"
+        alt="Logo"
+      />
+      <h1>Sistema de Gerenciamento</h1>
+      <div class="absolute-div">
+        <a href="{{ url_for('suporte') }}">Suporte</a>
+        {% if current_user.is_authenticated %}
+        <a href="{{ url_for('logout') }}">Logout</a>
+        {% endif %}
+      </div>
+    </header>
+
+    <div class="flash-messages">
+      {% with messages = get_flashed_messages(with_categories=true) %} {% if
+      messages %} {% for category, message in messages %}
+      <div class="alert alert-{{ category }}">
+        {{ message }}
+        <span class="close-btn" onclick="this.parentElement.remove()">×</span>
+      </div>
+      {% endfor %} {% endif %} {% endwith %}
+    </div>
+
+    <main>{% block content %}{% endblock %}</main>
+
+    <footer>
+      <p>2025 Papelaria Arte e Papel</p>
+    </footer>
+
+    <script>
+      setTimeout(() => {
+        document.querySelectorAll(".alert").forEach((alert) => {
+          alert.remove();
+        });
+      }, 5000);
+    </script>
+  </body>
+</html>

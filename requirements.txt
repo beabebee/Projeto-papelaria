@@ -1,0 +1,22 @@
+flask==2.2.5
+werkzeug==2.2.3
+flask-sqlalchemy==3.0.3
+flask-login==0.6.3
+flask-mail==0.9.1
+python-dotenv==1.0.1
+itsdangerous==2.1.2
+flask-moment==1.0.5
+
+# pip uninstall flask flask-sqlalchemy
+# pip install -r requirements.txt
+
+# python -m venv venv               CRIEI O AMBIENTE VIRTUAL
+# venv\Scripts\activate             SEMPRE ATIVAR ANTES DE RODAR!!
+
+#ai sim eu instalo o requirements.txt!!!!!
+
+# pip install --upgrade pip
+
+######################################################################
+# Email: admin@papelaria.com
+# Senha: admin123
