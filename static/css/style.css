@@ -6,12 +6,14 @@ body {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
+  background-color: #f9f9f9;
+  color: #333;
 }
 
 header {
   position: relative;
   display: flex;
-  background: #adcfe6;
+  background: #4da6ff;
   color: white;
   padding: 1rem;
   justify-content: center;
@@ -38,8 +40,8 @@ main {
 }
 
 footer {
-  background: #6c8392;
-  color: white;
+  background: #e0e0e0;
+  color: #333;
   text-align: center;
   padding: 1rem;
   margin-top: auto;
@@ -49,10 +51,10 @@ footer {
 .form-produto {
   max-width: 600px;
   margin: 0 auto;
-  background: white;
+  background: #fff;
   padding: 20px;
   border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.08);
 }
 
 .form-group {
@@ -74,6 +76,7 @@ footer {
   border-radius: 4px;
 }
 
+/* Botões salvar/cancelar */
 .btn-salvar {
   background-color: #228b22;
   color: white;
@@ -113,7 +116,7 @@ footer {
   border: 1px solid #ddd;
   border-radius: 10px;
   padding: 20px;
-  background-color: white;
+  background-color: #fff;
 }
 
 .btn-salvar,
@@ -128,8 +131,8 @@ footer {
 .btn-voltar {
   display: inline-block;
   padding: 8px 16px;
-  background-color: #9daab6;
-  color: white;
+  background-color: #e0e0e0;
+  color: #333;
   text-decoration: none;
   border-radius: 4px;
   margin-bottom: 20px;
@@ -137,8 +140,8 @@ footer {
 }
 
 .btn-voltar:hover {
-  background-color: #768491;
-  color: white;
+  background-color: #d6d6d6;
+  color: #333;
   text-decoration: none;
 }
 
@@ -151,21 +154,21 @@ footer {
 }
 
 .tabela-produtos thead th {
-  background-color: #adcfe6;
-  color: white;
+  background-color: #f2f7ff;
+  color: #333;
   padding: 12px;
   text-align: left;
 }
 
 .tabela-produtos tbody tr {
-  background-color: #f8f9fa;
+  background-color: #fff;
   transition: all 0.3s ease;
 }
 
 .tabela-produtos tbody tr:hover {
-  background-color: #e9ecef;
+  background-color: #e6f0ff;
   transform: translateY(-2px);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.08);
 }
 
 .tabela-produtos td {
@@ -211,19 +214,35 @@ footer {
 }
 
 .tabela-clientes thead th {
-  background-color: #6c8392;
-  color: white;
+  background-color: #f2f7ff;
+  color: #333;
   padding: 12px;
   text-align: left;
+}
+
+.tabela-clientes tbody tr {
+  background-color: #fff;
+  transition: all 0.3s ease;
+}
+
+.tabela-clientes tbody tr:hover {
+  background-color: #e6f0ff;
+  transform: translateY(-2px);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+}
+
+.tabela-clientes td {
+  padding: 12px;
+  border-bottom: 1px solid #dee2e6;
 }
 
 .form-cliente {
   max-width: 600px;
   margin: 0 auto;
-  background: white;
+  background: #fff;
   padding: 20px;
   border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.08);
 }
 
 /* Estilos Menu principal */
@@ -236,7 +255,7 @@ footer {
 }
 
 .botao-menu {
-  background-color: #6c8392;
+  background-color: #4da6ff;
   color: white;
   padding: 15px 25px;
   border-radius: 8px;
@@ -245,13 +264,14 @@ footer {
   font-size: 1.1em;
   min-width: 150px;
   text-align: center;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 5px rgba(0,0,0,0.08);
 }
 
 .botao-menu:hover {
+  background-color: #3399ff;
   transform: translateY(-3px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-  opacity: 0.9;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.12);
+  opacity: 0.95;
 }
 
 /* Estilos Mensagens flash */
@@ -268,7 +288,7 @@ footer {
   margin-bottom: 10px;
   border-radius: 4px;
   position: relative;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 10px rgba(0,0,0,0.08);
 }
 
 .alert-success {
@@ -289,6 +309,7 @@ footer {
   right: 10px;
   cursor: pointer;
   font-size: 1.2em;
+  color: #ff407d;
 }
 
 /* Estilo específico para os botões de ação */
@@ -305,24 +326,36 @@ footer {
   margin: 20px 0;
 }
 
-.tabela-vendas th {
-  background-color: #6c8392;
-  color: white;
+.tabela-vendas thead th {
+  background-color: #f2f7ff;
+  color: #333;
   padding: 12px;
+  text-align: left;
+}
+
+.tabela-vendas tbody tr {
+  background-color: #fff;
+  transition: all 0.3s ease;
+}
+
+.tabela-vendas tbody tr:hover {
+  background-color: #e6f0ff;
+  transform: translateY(-2px);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.08);
 }
 
 .tabela-vendas td {
   padding: 12px;
-  background-color: #f8f9fa;
+  border-bottom: 1px solid #dee2e6;
 }
 
 .form-venda {
   max-width: 600px;
   margin: 0 auto;
-  background: white;
+  background: #fff;
   padding: 20px;
   border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.08);
 }
 
 .form-venda select,
@@ -343,7 +376,7 @@ footer {
 }
 
 .subtitulo {
-  color: #666;
+  color: #4da6ff;
   margin-bottom: 40px;
   font-size: 1.1em;
 }
@@ -358,10 +391,18 @@ footer {
 .container-auth {
   max-width: 400px;
   margin: 50px auto;
-  padding: 20px;
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  padding: 30px 25px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+  animation: fadeIn 0.7s ease;
+}
+
+.container-auth h1 {
+  text-align: center;
+  margin-bottom: 20px;
+  color: #4da6ff;
+  font-size: 1.8em;
 }
 
 .form-auth {
@@ -379,40 +420,66 @@ footer {
 
 .form-auth input {
   width: 100%;
-  padding: 8px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  transition: all 0.3s ease;
+}
+
+.form-auth input:focus {
+  border-color: #3399ff;
+  box-shadow: 0 0 6px rgba(51,153,255,0.3);
+  outline: none;
 }
 
 .btn-auth {
   width: 100%;
-  padding: 10px;
-  background-color: #6c8392;
+  padding: 12px;
+  background: #4da6ff;
   color: white;
   border: none;
-  border-radius: 4px;
+  border-radius: 6px;
   cursor: pointer;
+  font-size: 1.1em;
+  transition: all 0.3s ease;
   margin-top: 10px;
+}
+
+.btn-auth:hover {
+  background: #3399ff;
+  transform: translateY(-2px);
 }
 
 .auth-links {
   display: flex;
   flex-direction: column;
-  margin-top: 15px;
+  margin-top: 20px;
+  gap: 8px;
   text-align: center;
 }
 
 .auth-links a {
-  color: #6c8392;
+  color: #4da6ff;
   text-decoration: none;
+  transition: color 0.3s, text-decoration 0.3s;
+}
+
+.auth-links a:hover {
+  color: #3399ff;
+  text-decoration: underline;
 }
 
 /* Imagem */
-
 .logo {
   width: 90px;
   height: auto;
   border-radius: 50%;
   object-fit: cover;
   border: 3px solid #fff;
+}
+
+/* Animação de entrada */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-15px); }
+  to { opacity: 1; transform: translateY(0); }
 }
