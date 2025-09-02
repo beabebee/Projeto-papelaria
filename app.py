@@ -96,10 +96,10 @@ class Venda(db.Model):
 with app.app_context():
     db.create_all()
     
-    if not Usuario.query.filter_by(email='admin@papelaria.com').first():
+    if not Usuario.query.filter_by(email='admin.papelaria@example.com').first():
         admin = Usuario(
             nome='Administrador',
-            email='admin@papelaria.com',
+            email='admin.papelaria@example.com',
             senha=generate_password_hash('admin123'),
             tipo='admin'
         )
