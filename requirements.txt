@@ -6,6 +6,11 @@ flask-mail==0.9.1
 python-dotenv==1.0.1
 itsdangerous==2.1.2
 flask-moment==1.0.5
+SQLAlchemy==2.0.21
+pandas==2.1.0
+scikit-learn==1.3.2
+numpy==1.26.4
+python-Levenshtein==0.25.1
 
 # pip uninstall flask flask-sqlalchemy
 # pip install -r requirements.txt

@@ -1,44 +1,152 @@
-{% extends "base.html" %}
-
-{% block content %}
+{% extends "base.html" %} {% block content %}
 <div class="container">
-    <h1>Clientes</h1>
-    
-    <!--Novo cliente-->
-    <a href="{{ url_for('cadastrar_cliente') }}" class="btn-novo">+ Novo Cliente</a>
+  <h1>Clientes</h1>
 
-    <!--Listagem de clientes-->
-    <table class="tabela-clientes">
-        <thead>
-            <tr>
-                <th>Nome</th>
-                <th>Email</th>
-                <th>Telefone</th>
-                <th>Ações</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for cliente in clientes %}
-            <tr>
-                <td>{{ cliente.nome }}</td>
-                <td>{{ cliente.email }}</td>
-                <td>{{ cliente.telefone }}</td>
-                <td class="acoes">
-                    <a href="{{ url_for('editar_cliente', id=cliente.id) }}" class="btn-editar">Editar</a>
-                    <form action="{{ url_for('deletar_cliente', id=cliente.id) }}" method="POST" class="form-deletar">
-                        <button type="submit" class="btn-excluir">Excluir</button>
-                    </form>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+  <!--Novo cliente-->
+  <a href="{{ url_for('cadastrar_cliente') }}" class="btn-novo"
+    >+ Novo Cliente</a
+  >
 
-    <!-- Botão para voltar (vou fazer nas outras páginas também) -->
-    <div class="rodape-tabela">
-        <a href="{{ url_for('home') }}" class="btn-voltar">
-            ← Voltar à Página Inicial
-        </a>
+  <!--Listagem de clientes-->
+  <table class="tabela-clientes">
+    <thead>
+      <tr>
+        <th>Nome</th>
+        <th>Email</th>
+        <th>Telefone</th>
+        <th>Ações</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for cliente in clientes %}
+      <tr>
+        <td>{{ cliente.nome }}</td>
+        <td>{{ cliente.email }}</td>
+        <td>{{ cliente.telefone }}</td>
+        <td class="acoes">
+          <a
+            href="{{ url_for('editar_cliente', id=cliente.id) }}"
+            class="btn-editar"
+            >Editar</a
+          >
+          <button
+            class="btn-recomendacao"
+            data-cliente-id="{{ cliente.id }}"
+            style="cursor: pointer"
+            data-cliente-nome="{{ cliente.nome }}"
+            onclick="handleRecommendationClick(this)"
+          >
+            Recomendações
+          </button>
+
+          <form
+            action="{{ url_for('deletar_cliente', id=cliente.id) }}"
+            method="POST"
+            class="form-deletar"
+          >
+            <button type="submit" class="btn-excluir">Excluir</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <div class="modal-overlay" id="modalOverlay"></div>
+  <div class="modal-container" id="recommendationModal">
+    <div class="modal-header">
+      <h5 class="modal-title" id="modalLabel">Recomendações</h5>
+      <button type="button" class="btn-close" id="closeModalBtn">
+        &times;
+      </button>
     </div>
+    <div class="modal-body">
+      <p
+        id="recommendation-subtitle"
+        style="font-style: italic; color: #666"
+      ></p>
+      <ul id="recommendation-list" class="list-group"></ul>
+    </div>
+  </div>
+
+  <!-- Botão para voltar (vou fazer nas outras páginas também) -->
+  <div class="rodape-tabela">
+    <a href="{{ url_for('home') }}" class="btn-voltar">
+      ← Voltar à Página Inicial
+    </a>
+  </div>
 </div>
+
+<script>
+  // Pega os elementos do nosso modal
+  const modal = document.getElementById("recommendationModal");
+  const overlay = document.getElementById("modalOverlay");
+  const closeModalBtn = document.getElementById("closeModalBtn");
+
+  // Funções para abrir/fechar o modal
+  function openModal() {
+    overlay.classList.add("active");
+    modal.classList.add("active");
+  }
+  function closeModal() {
+    overlay.classList.remove("active");
+    modal.classList.remove("active");
+  }
+
+  // Eventos para fechar
+  closeModalBtn.addEventListener("click", closeModal);
+  overlay.addEventListener("click", closeModal);
+
+  // Função principal que é chamada pelo botão
+  function handleRecommendationClick(buttonElement) {
+    const clienteId = buttonElement.getAttribute("data-cliente-id");
+    const clienteNome = buttonElement.getAttribute("data-cliente-nome");
+    getRecommendations(clienteId, clienteNome);
+    openModal();
+  }
+
+  // Função de fetch ATUALIZADA
+  function getRecommendations(clienteId, clienteNome) {
+    const list = document.getElementById("recommendation-list");
+    const title = document.getElementById("modalLabel");
+    const subtitle = document.getElementById("recommendation-subtitle"); // Pega o novo parágrafo
+
+    title.textContent = `Recomendações para ${clienteNome}`;
+    subtitle.textContent = ""; // Limpa o subtítulo
+    list.innerHTML = "<li>Carregando...</li>";
+
+    fetch(`/recomendar/cliente/${clienteId}`)
+      .then((response) => response.json())
+      .then((data) => {
+        list.innerHTML = "";
+
+        // Se o tipo for 'fallback', mostramos a mensagem especial
+        if (data.tipo === "fallback") {
+          subtitle.textContent =
+            "Nenhuma recomendação personalizada encontrada. Que tal sugerir um dos nossos produtos populares?";
+        }
+
+        if (data.produtos && data.produtos.length > 0) {
+          data.produtos.forEach((produto) => {
+            const listItem = document.createElement("li");
+            listItem.className = "list-group-item";
+            listItem.textContent = `${
+              produto.nome
+            } - R$ ${produto.preco.toFixed(2)}`;
+            list.appendChild(listItem);
+          });
+        } else {
+          // Esta mensagem agora só aparece se nem o fallback funcionar
+          list.innerHTML =
+            '<li class="list-group-item">Nenhum produto encontrado.</li>';
+        }
+      })
+      .catch((error) => {
+        console.error("Erro ao buscar recomendações:", error);
+        list.innerHTML =
+          '<li class="list-group-item">Ocorreu um erro ao buscar.</li>';
+      });
+  }
+</script>
+
 {% endblock %}

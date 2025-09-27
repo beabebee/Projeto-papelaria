@@ -11,7 +11,6 @@
   </head>
   <body>
     <header>
-      <!--O flask trata as imagens de forma diferente-->
       <img
         src="{{ url_for('static', filename='images/logo.jpg') }}"
         class="logo"
@@ -19,6 +18,7 @@
       />
       <h1>Sistema de Gerenciamento</h1>
       <div class="absolute-div">
+        <a href="{{ url_for('faq') }}">FAQ</a>
         <a href="{{ url_for('suporte') }}">Suporte</a>
         {% if current_user.is_authenticated %}
         <a href="{{ url_for('logout') }}">Logout</a>
@@ -49,5 +49,6 @@
         });
       }, 5000);
     </script>
+    {% include 'support/_chatbox.html' %}
   </body>
 </html>

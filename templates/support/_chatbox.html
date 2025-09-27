@@ -1,0 +1,65 @@
+<div id="chatbox" class="collapsed">
+  <div id="chatbox-header">
+    <span>Assistente Virtual</span>
+    <span id="chat-toggle-icon">+</span>
+  </div>
+  <div id="messages"></div>
+  <div id="userInput">
+    <input type="text" id="userMessage" placeholder="Digite sua dúvida..." />
+    <button id="sendBtn">Enviar</button>
+  </div>
+</div>
+
+<script>
+  const chatbox = document.getElementById("chatbox");
+  const chatHeader = document.getElementById("chatbox-header");
+  const toggleIcon = document.getElementById("chat-toggle-icon");
+  const messagesDiv = document.getElementById("messages");
+  const input = document.getElementById("userMessage");
+  const sendBtn = document.getElementById("sendBtn");
+
+  chatHeader.addEventListener("click", () => {
+    chatbox.classList.toggle("collapsed");
+    if (chatbox.classList.contains("collapsed")) {
+      toggleIcon.textContent = "+";
+    } else {
+      toggleIcon.textContent = "-";
+    }
+  });
+
+  function addMessage(text, sender) {
+    const msgDiv = document.createElement("div");
+    msgDiv.classList.add("msg", sender);
+    msgDiv.textContent = text;
+    messagesDiv.appendChild(msgDiv);
+    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+  }
+
+  async function handleSend() {
+    const userText = input.value;
+    if (!userText.trim()) return;
+
+    addMessage(userText, "user");
+    input.value = "";
+
+    try {
+      const response = await fetch("/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ mensagem: userText }),
+      });
+      const data = await response.json();
+      addMessage(data.resposta, "bot");
+    } catch (error) {
+      console.error("Erro ao contatar o bot:", error);
+      addMessage("Desculpe, não consegui me conectar. Tente novamente.", "bot");
+    }
+  }
+
+  sendBtn.addEventListener("click", handleSend);
+  input.addEventListener("keypress", (e) => {
+    if (e.key === "Enter") {
+      handleSend();
+    }
+  });
+</script>

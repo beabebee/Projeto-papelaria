@@ -1,23 +1,39 @@
-{% extends "base.html" %}
-
-{% block title %}Página Inicial{% endblock %}
-
-{% block content %}
+{% extends "base.html" %} {% block title %}Página Inicial{% endblock %} {% block
+content %}
 <div class="container">
-    <h1>Bem-vindo ao Sistema da Papelaria</h1>
-    <p class="subtitulo">Gerencie produtos, clientes e vendas de forma eficiente.</p>
+  <h1>Bem-vindo ao Sistema da Papelaria</h1>
+  <p class="subtitulo">
+    Gerencie produtos, clientes e vendas de forma eficiente.
+  </p>
 
-    <!--Botões que levam as rotas (com cadastro, listagem, edição e exclusão)-->
-    <div class="menu-principal">
-        <a href="{{ url_for('listar_produtos') }}" class="botao-menu">
-            📦 Produtos
-        </a>
-        <a href="{{ url_for('listar_clientes') }}" class="botao-menu">
-            👥 Clientes
-        </a>
-        <a href="{{ url_for('listar_vendas') }}" class="botao-menu">
-            💰 Vendas
-        </a>
+  <div class="menu-principal">
+    <a href="{{ url_for('listar_produtos') }}" class="botao-menu">
+      📦 Produtos
+    </a>
+    <a href="{{ url_for('listar_clientes') }}" class="botao-menu">
+      👥 Clientes
+    </a>
+    <a href="{{ url_for('listar_vendas') }}" class="botao-menu"> 💰 Vendas </a>
+  </div>
+
+  <div class="best-sellers-section">
+    <h2>🏆 Produtos Mais Vendidos</h2>
+    {% if produtos_mais_vendidos %}
+    <div class="best-sellers-container">
+      {% for produto in produtos_mais_vendidos %}
+      <div class="product-card">
+        <h3>{{ produto.nome }}</h3>
+        <p>Preço: R$ {{ "%.2f"|format(produto.preco|float) }}</p>
+        <p>Estoque: {{ produto.quantidade }} unidades</p>
+      </div>
+      {% endfor %}
     </div>
+    {% else %}
+    <p>
+      Ainda não há dados de vendas suficientes para exibir os produtos mais
+      vendidos.
+    </p>
+    {% endif %}
+  </div>
 </div>
 {% endblock %}

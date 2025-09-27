@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, get_flashed_messages
+from flask import Flask, jsonify, render_template, request, redirect, url_for, flash
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 import os
@@ -8,7 +8,7 @@ from flask_mail import Mail, Message
 from dotenv import load_dotenv
 from itsdangerous import URLSafeTimedSerializer
 from flask_moment import Moment
-
+from chatbot_config import get_simple_bot_response, faqs_list 
 
 load_dotenv()
 
@@ -238,9 +238,15 @@ def logout():
 @app.route('/')
 @login_required
 def home():
+    from recommendation_engine import get_best_sellers
+    # Busca os 5 produtos mais vendidos
+    produtos_mais_vendidos = get_best_sellers(n=6)
+    
+    # Envia a lista para o template
     return render_template('index.html', 
                          titulo="Papelaria Arte & Papel",
-                         mensagem="Bem-vindo ao sistema de gerenciamento!")
+                         mensagem="Bem-vindo ao sistema de gerenciamento!",
+                         produtos_mais_vendidos=produtos_mais_vendidos)
 
 # Rotas de Produtos
 @app.route('/produtos')
@@ -419,6 +425,53 @@ def traduzir_assunto(assunto):
         "comunicacao_geral": "Comunicação geral ou aviso importante"
     }
     return traducoes.get(assunto, assunto)
+
+
+# Rotas do Chatbot e FAQ
+@app.route('/faq')
+@login_required
+def faq():
+    return render_template('support/faq.html', faqs=faqs_list)
+
+@app.route("/chat", methods=["POST"])
+def chat():
+    data = request.get_json()
+    user_message = data.get("mensagem")
+    if not user_message:
+        return jsonify({"resposta": "Por favor, digite uma mensagem."})
+
+    bot_response = get_simple_bot_response(user_message)
+    return jsonify({"resposta": bot_response})
+
+# Rotas de Recomendação
+@app.route('/recomendar/cliente/<int:id>')
+@login_required
+def recomendar_para_cliente(id):
+    from recommendation_engine import recommend_for_client_knn, get_best_sellers
+    
+    # Tenta obter recomendações personalizadas primeiro
+    produtos_recomendados = recommend_for_client_knn(client_id=id)
+    
+    # Se a lista de recomendações personalizadas estiver vazia...
+    if not produtos_recomendados:
+        # ...busque os produtos mais vendidos como um fallback.
+        produtos_recomendados = get_best_sellers(n=3) # Pega os 3 mais vendidos
+        tipo_recomendacao = 'fallback'
+    else:
+        tipo_recomendacao = 'personalizada'
+
+
+   # Transforma a lista de produtos em um formato JSON
+    resultado_produtos = [
+        {'id': p.id, 'nome': p.nome, 'preco': p.preco} 
+        for p in produtos_recomendados
+    ]
+    
+    # Retorna um objeto JSON com o tipo e a lista de produtos
+    return jsonify({
+        'tipo': tipo_recomendacao,
+        'produtos': resultado_produtos
+    })
 
 ######################################
 # Inicialização

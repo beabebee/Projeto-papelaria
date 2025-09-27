@@ -1,0 +1,16 @@
+{% extends "base.html" %} {% block title %}FAQ - Perguntas Frequentes{% endblock
+%} {% block content %}
+<div class="container">
+  <h1>FAQ - Perguntas Frequentes</h1>
+  <p class="subtitulo">Tire suas dúvidas sobre como usar o sistema.</p>
+
+  <div class="faq-container">
+    {% for question, answer in faqs %}
+    <div class="faq-item">
+      <h3 class="faq-question">P: {{ question.capitalize() }}</h3>
+      <p class="faq-answer">R: {{ answer }}</p>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}
