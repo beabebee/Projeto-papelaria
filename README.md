@@ -4,8 +4,6 @@ Este documento detalha as novas funcionalidades de Inteligência Artificial impl
 
 A versão anterior do projeto consistia em um sistema CRUD (Create, Read, Update, Delete) para produtos, clientes e vendas, com autenticação de usuários. A atualização adicionou duas camadas de automação: um chatbot assistente e um sistema de recomendação de produtos.
 
-### AVISO: Para subir essas alterações pro seu código do github, eu recomendo que voce pegue todos os arquivos novos e vá dando cntrl + a, cntrl + c e cntrl + v só pra garantir, faça isso no seu PC de casa pois la o github ja ta configurado <3
-
 Crie e ative um ambiente virtual:
 
 ```bash
@@ -21,6 +19,8 @@ pandas==2.1.0
 scikit-learn==1.3.2
 numpy==1.26.4
 python-Levenshtein==0.25.1
+
+gunicorn
 ```
 
 Instale as dependências:
@@ -39,7 +39,7 @@ Acesse http://127.0.0.1:5000 no seu navegador.
 
 ---
 
-Alterei o arquivo .gitignore para adicionar a linha /**pycache** nele, para garantir que qualquer cache do python n suba para o github.
+Alterei o arquivo .gitignore para adicionar a linha /**pycache** nele, para garantir que qualquer cache do python não suba para o github.
 
 ## Assistente Virtual (Chatbot)
 
@@ -49,10 +49,10 @@ Foi implementado um chatbot para servir como um assistente para o vendedor, ajud
 
 - chatbot_config.py: "cérebro" do chatbot. Ele contém o dicionário conversa_assistente com perguntas e respostas conhecidos. Inclui a função get_simple_bot_response, que recebe a mensagem do usuário, a normaliza (converte para minúsculas) e busca a resposta mais relevante usando técnicas de similaridade de texto (NLP com scikit-learn).
 - app.py (modificado): importa as novas funções e o dicionario do arquivo anterior; criado a rota /faq que usa o dicionario criado para treinar o chatbot para exibir as perguntas frequentes em uma página; criado a rota /chat que recebe apenas chamadas do tipo POST, e recebe a mensagem do usuario e a envia para a função get_simple_bot_response, retornando a resposta em json.
-- \_chatbox.html: é o arquivo referente a caixa de dialogo com o chatbot, foi estilizada com um mecanismo de minimizar a caixinha, e contem scripts que fazem isso; alem de uma função que lida com o input de mensagem e é responsavel por fazer a requisição para a rota /chat, obter a resposta do modelo e exibir ele na tela.
+- \_chatbox.html: é o arquivo referente a caixa de dialogo com o chatbot, foi estilizada com um mecanismo de minimizar a caixinha, e contem scripts que fazem isso; além de uma função que lida com o input de mensagem e é responsavel por fazer a requisição para a rota /chat, obter a resposta do modelo e exibir ele na tela.
 - faq page: uma simples exibição do dicionario de perguntas e respostas na tela.
-- base.html (modificado): foi incluido o botao que leva a FAQ page e inclui o arquivo \_chatbox.html na página inteira.
-- styles.css (modificado): foi incluido estilos (devidamente identificado com comentarios) referentes ao chatbox.
+- base.html (modificado): foi incluido o botão que leva a FAQ page e inclui o arquivo \_chatbox.html na página inteira.
+- styles.css (modificado): foi incluido estilos (devidamente identificado com comentários) referentes ao chatbox.
 
 ## Sistema de Recomendações
 
@@ -66,12 +66,7 @@ Foi implementado um sistema de recomendação com duas frentes para auxiliar o v
 - templates/index.html (modificado): Uma seção "Produtos Mais Vendidos" foi adicionada à página inicial, exibindo os produtos retornados pela rota /.
 - styles.css (modificado): foi incluido estilos (devidamente identificado com comentarios) referentes ao sistema de recomendação.
 
-## Próximos Passos
+Foi feito deploy na plataforma render:
+https://projeto-papelaria-czug.onrender.com
 
-- Deixar as perguntas do faq e do chatbot mais refinadas e melhores
-- Otimizar o código feito
-- Estilizar melhor
-- Melhorar a documentação do projeto (pode manter esse arquivo qualquer coisa, só apagar as instruções que são pra voce)
-- Migrar o banco de dados para PostgresSQL ou MySQL -> para conseguir hospedar o site
-- Hospedar o site: PythonAnywhere, Render, Heroku
-- Planejar a apresentação em sala
+Na versão de deploy o sistema de email não funciona, pois a biblioteca necessita utilizar portas que o render bloqueia na versão gratuita.
