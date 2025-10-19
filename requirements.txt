@@ -25,3 +25,5 @@ python-Levenshtein==0.25.1
 ######################################################################
 # Email: admin@papelaria.com
 # Senha: admin123
+
+gunicorn
