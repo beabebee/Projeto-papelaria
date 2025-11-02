@@ -12,35 +12,45 @@
     <thead>
       <tr>
         <th>Nome</th>
+        <th>Classificação</th>
         <th>Email</th>
         <th>Telefone</th>
         <th>Ações</th>
       </tr>
     </thead>
     <tbody>
-      {% for cliente in clientes %}
+      {% for info in clientes_info %}
       <tr>
-        <td>{{ cliente.nome }}</td>
-        <td>{{ cliente.email }}</td>
-        <td>{{ cliente.telefone }}</td>
+        <td>{{ info.cliente.nome }}</td>
+        <td>
+          <span
+            class="badge"
+            style="background-color: {{ info.classificacao.cor }}; color: white; padding: 4px 8px; font-size: 0.8em; border-radius: 10px; margin-left: 5px;"
+          >
+            {{ info.classificacao.nome }}
+          </span>
+        </td>
+        <td>{{ info.cliente.email }}</td>
+        <td>{{ info.cliente.telefone }}</td>
+
         <td class="acoes">
           <a
-            href="{{ url_for('editar_cliente', id=cliente.id) }}"
+            href="{{ url_for('editar_cliente', id=info.cliente.id) }}"
             class="btn-editar"
             >Editar</a
           >
           <button
             class="btn-recomendacao"
-            data-cliente-id="{{ cliente.id }}"
+            data-cliente-id="{{ info.cliente.id }}"
             style="cursor: pointer"
-            data-cliente-nome="{{ cliente.nome }}"
+            data-cliente-nome="{{ info.cliente.nome }}"
             onclick="handleRecommendationClick(this)"
           >
             Recomendações
           </button>
 
           <form
-            action="{{ url_for('deletar_cliente', id=cliente.id) }}"
+            action="{{ url_for('deletar_cliente', id=info.cliente.id) }}"
             method="POST"
             class="form-deletar"
           >
@@ -67,6 +77,36 @@
       ></p>
       <ul id="recommendation-list" class="list-group"></ul>
     </div>
+    <div
+      class="modal-footer"
+      style="
+        padding: 1rem;
+        border-top: 1px solid #eee;
+        text-align: center;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-direction: column;
+        gap: 1rem;
+      "
+    >
+      <button
+        type="button"
+        class="btn-novo"
+        id="sendEmailBtn"
+        style="
+          display: none;
+          cursor: pointer;
+          background-color: #006a4e;
+          border: none;
+          color: white;
+        "
+        disabled
+      >
+        Enviar Recomendações
+      </button>
+      <small id="emailStatusMsg" style="color: green"></small>
+    </div>
   </div>
 
   <!-- Botão para voltar (vou fazer nas outras páginas também) -->
@@ -82,6 +122,8 @@
   const modal = document.getElementById("recommendationModal");
   const overlay = document.getElementById("modalOverlay");
   const closeModalBtn = document.getElementById("closeModalBtn");
+  const sendEmailBtn = document.getElementById("sendEmailBtn");
+  const emailStatusMsg = document.getElementById("emailStatusMsg");
 
   // Funções para abrir/fechar o modal
   function openModal() {
@@ -115,6 +157,12 @@
     subtitle.textContent = ""; // Limpa o subtítulo
     list.innerHTML = "<li>Carregando...</li>";
 
+    sendEmailBtn.style.display = "none"; // Oculta
+    sendEmailBtn.disabled = true; // Desabilita
+    sendEmailBtn.textContent = "Enviar por E-mail"; // Reseta o texto
+    emailStatusMsg.textContent = ""; // Limpa status
+    sendEmailBtn.setAttribute("data-cliente-id", clienteId); // Armazena o ID
+
     fetch(`/recomendar/cliente/${clienteId}`)
       .then((response) => response.json())
       .then((data) => {
@@ -135,6 +183,9 @@
             } - R$ ${produto.preco.toFixed(2)}`;
             list.appendChild(listItem);
           });
+
+          sendEmailBtn.style.display = "inline-block"; // Mostra
+          sendEmailBtn.disabled = false; // Habilita
         } else {
           // Esta mensagem agora só aparece se nem o fallback funcionar
           list.innerHTML =
@@ -147,6 +198,46 @@
           '<li class="list-group-item">Ocorreu um erro ao buscar.</li>';
       });
   }
+
+  sendEmailBtn.addEventListener("click", function () {
+    const clienteId = this.getAttribute("data-cliente-id");
+
+    // Mostra estado de "enviando"
+    this.disabled = true;
+    this.textContent = "Enviando...";
+    emailStatusMsg.textContent = "";
+    emailStatusMsg.style.color = "gray";
+
+    fetch(`/enviar-recomendacoes/cliente/${clienteId}`, {
+      method: "POST", // Usa POST como definimos na rota
+      headers: {
+        "Content-Type": "application/json",
+        // O Flask-Login usa cookies, então não precisamos de token de auth aqui
+      },
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.status === "success") {
+          emailStatusMsg.textContent = data.message;
+          emailStatusMsg.style.color = "green";
+          this.textContent = "Enviado!";
+          // Mantém desabilitado para não enviar de novo
+        } else {
+          emailStatusMsg.textContent = data.message;
+          emailStatusMsg.style.color = "red";
+          // Reabilita para tentar de novo
+          this.disabled = false;
+          this.textContent = "Tentar Novamente";
+        }
+      })
+      .catch((error) => {
+        console.error("Erro ao enviar email:", error);
+        emailStatusMsg.textContent = "Erro de rede ao enviar.";
+        emailStatusMsg.style.color = "red";
+        this.disabled = false;
+        this.textContent = "Tentar Novamente";
+      });
+  });
 </script>
 
 {% endblock %}

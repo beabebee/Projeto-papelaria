@@ -4,11 +4,15 @@ from datetime import datetime
 import os
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin, LoginManager, login_user, login_required, logout_user, current_user
-from flask_mail import Mail, Message
 from dotenv import load_dotenv
 from itsdangerous import URLSafeTimedSerializer
 from flask_moment import Moment
 from chatbot_config import get_simple_bot_response, faqs_list 
+from classification_engine import carregar_modelos
+from sendgrid import SendGridAPIClient
+from sendgrid.helpers.mail import Mail as SendGridMail
+
+kmeans_model, scaler_model = carregar_modelos()
 
 load_dotenv()
 
@@ -20,19 +24,6 @@ app.secret_key = os.getenv('SECRET_KEY') # Chave secreta para proteger sessões
 app.config['SECURITY_PASSWORD_SALT'] = os.getenv('SECURITY_PASSWORD_SALT')
 
 moment = Moment(app)
-
-# Configuração do Flask-Mail
-app.config.update(
-    MAIL_SERVER=os.getenv('MAIL_SERVER', 'smtp.gmail.com'),
-    MAIL_PORT=int(os.getenv('MAIL_PORT', '587')),
-    MAIL_USE_TLS=os.getenv('MAIL_USE_TLS', 'True') == 'True',
-    MAIL_USE_SSL=os.getenv('MAIL_USE_SSL', 'False') == 'True',
-    MAIL_USERNAME=os.getenv('MAIL_USERNAME'),
-    MAIL_PASSWORD=os.getenv('MAIL_PASSWORD'),
-    MAIL_DEFAULT_SENDER=os.getenv('MAIL_DEFAULT_SENDER')
-)
-
-mail = Mail(app)
 
 # Configuração do banco de dados
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///papelaria.db'
@@ -89,6 +80,27 @@ class Venda(db.Model):
     
     cliente = db.relationship('Cliente', backref='vendas')
     produto = db.relationship('Produto', backref='vendas')
+
+def enviar_email_sendgrid(para_emails, assunto, html_conteudo):
+    """
+    Função helper para disparar emails usando a API do SendGrid.
+    'para_emails' pode ser um único email (string) ou uma lista de emails.
+    """
+    sg = SendGridAPIClient(os.getenv('SENDGRID_API_KEY'))
+    message = SendGridMail(
+        from_email=os.getenv('MAIL_DEFAULT_SENDER'),
+        to_emails=para_emails,
+        subject=assunto,
+        html_content=html_conteudo
+    )
+
+    try:
+        response = sg.send(message)
+        app.logger.info(f"Email enviado para {para_emails}, status: {response.status_code}")
+        return response.status_code
+    except Exception as e:
+        app.logger.error(f"Erro ao enviar email via SendGrid: {e}")
+        return None
 
 ######################################
 # Inicialização do banco
@@ -154,17 +166,14 @@ def cadastro():
 
 
 def enviar_email_boas_vindas(usuario):
-    msg = Message(
-        subject="Bem-vindo à Papelaria Arte & Papel!",
-        recipients=[usuario.email],
-        html=f"""
+        assunto = "Bem-vindo à Papelaria Arte & Papel!"
+        html = f"""
         <h2>Olá, {usuario.nome}!</h2>
         <p>Seu cadastro foi realizado com sucesso.</p>
         <p>Seu login é: {usuario.email}</p>
         <p><a href="{url_for('login', _external=True)}">Clique aqui para acessar o sistema</a></p>
         """
-    )
-    mail.send(msg)
+        enviar_email_sendgrid(usuario.email, assunto, html)
 
 @app.route('/esqueci-minha-senha', methods=['GET', 'POST'])
 def esqueci_minha_senha():
@@ -181,17 +190,14 @@ def esqueci_minha_senha():
 
 def enviar_email_redefinicao_senha(usuario):
     token = gerar_token_redefinicao_senha(usuario)
-    msg = Message(
-        subject="Redefinição de Senha - Papelaria Arte & Papel",
-        recipients=[usuario.email],
-        html=f"""
+    assunto = "Redefinição de Senha - Papelaria Arte & Papel"
+    html = f"""
         <h2>Olá, {usuario.nome}!</h2>
         <p>Recebemos um pedido para redefinir sua senha.</p>
         <p>Para redefinir sua senha, clique no link abaixo:</p>
         <p><a href="{url_for('redefinir_senha', token=token, _external=True)}">Redefinir Senha</a></p>
         """
-    )
-    mail.send(msg)
+    enviar_email_sendgrid(usuario.email, assunto, html)
 
 def gerar_token_redefinicao_senha(usuario):
     s = URLSafeTimedSerializer(app.config['SECRET_KEY'])
@@ -224,6 +230,45 @@ def verificar_token_redefinicao_senha(token, tempo_expiracao=900000):
     except Exception:
         return None
     return Usuario.query.get(data['user_id'])
+
+def enviar_email_recomendacao(cliente, produtos, tipo):
+    """
+    Envia um email de recomendação para um cliente específico.
+    """
+    html_lista_produtos = "<ul style='list-style-type: none; padding-left: 0;'>"
+    for p in produtos:
+        preco_formatado = f"R$ {p.preco:.2f}".replace('.', ',')
+        html_lista_produtos += f"""
+        <li style='margin-bottom: 15px; border: 1px solid #ddd; padding: 10px; border-radius: 5px;'>
+            <strong style='font-size: 1.1em;'>{p.nome}</strong><br>
+            <span style='color: #333;'>{p.descricao or 'Sem descrição'}</span><br>
+            <span style='font-size: 1.1em; font-weight: bold; color: #0056b3;'>{preco_formatado}</span>
+        </li>
+        """
+    html_lista_produtos += "</ul>"
+
+    if tipo == 'personalizada':
+        titulo = f"Olá, {cliente.nome}! Vimos que você pode gostar destes produtos:"
+        assunto_base = "Temos sugestões especiais para você!"
+    else:
+        titulo = f"Olá, {cliente.nome}! Confira nossos produtos mais populares:"
+        assunto_base = "Confira os mais vendidos da Papelaria Arte & Papel!"
+
+    assunto_completo = f"{assunto_base} - Papelaria Arte & Papel"
+
+    html = f"""
+        <div style='font-family: Arial, sans-serif; line-height: 1.6;'>
+            <h2 style='color: #004a99;'>{titulo}</h2>
+            <p>Aqui estão algumas sugestões que separamos para você:</p>
+            {html_lista_produtos}
+            <p>Esperamos te ver em breve!</p>
+            <hr>
+            <p style='font-size: 0.9em; color: #777;'>
+                Atenciosamente,<br>Equipe Arte & Papel
+            </p>
+        </div>
+        """
+    enviar_email_sendgrid(cliente.email, assunto_completo, html)
 
 @app.route('/logout')
 @login_required
@@ -298,8 +343,19 @@ def deletar_produto(id):
 @app.route('/clientes')
 @login_required
 def listar_clientes():
+    from classification_engine import classificar_cliente
+
     clientes = Cliente.query.all()
-    return render_template('clientes/listar.html', clientes=clientes)
+
+    clientes_com_classificacao = []
+    for cliente in clientes:
+        classificacao = classificar_cliente(cliente.id, kmeans_model, scaler_model)
+        clientes_com_classificacao.append({
+            'cliente': cliente,
+            'classificacao': classificacao
+        })
+
+    return render_template('clientes/listar.html', clientes_info=clientes_com_classificacao)
 
 @app.route('/clientes/novo', methods=['GET', 'POST'])
 @login_required
@@ -388,17 +444,19 @@ def suporte():
         mensagem = request.form['mensagem']
         data_hora = request.form['data_hora']
 
-        msg = Message(
-            subject=f"[Suporte] {traduzir_assunto(assunto)}",
-            recipients=[destinatario, solicitante],
-            body=f"""
-            Mensagem de: {solicitante}
-            Data e Hora: {data_hora}
+        assunto_final = f"[Suporte] {traduzir_assunto(assunto)}"
 
-            {mensagem}
-            """
-        )
-        mail.send(msg)
+        html = f"""
+        <div style='font-family: Arial, sans-serif; line-height: 1.6;'>
+            <p><strong>Mensagem de:</strong> {solicitante}</p>
+            <p><strong>Data e Hora:</strong> {data_hora}</p>
+            <hr>
+            <p style='white-space: pre-wrap;'>{mensagem}</p>
+        </div>
+        """
+        enviar_email_sendgrid(destinatario, assunto_final, html)
+        enviar_email_sendgrid(solicitante, assunto_final, html)
+
         flash('Sua mensagem foi enviada. Entraremos em contato em breve!', 'success')
         if current_user.is_authenticated:
             return redirect(url_for('home'))
@@ -472,6 +530,32 @@ def recomendar_para_cliente(id):
         'tipo': tipo_recomendacao,
         'produtos': resultado_produtos
     })
+
+@app.route('/enviar-recomendacoes/cliente/<int:id>', methods=['POST'])
+@login_required
+def enviar_recomendacoes_email(id):
+    from recommendation_engine import recommend_for_client_knn, get_best_sellers
+
+    cliente = Cliente.query.get_or_404(id)
+    if not cliente.email:
+        return jsonify({'status': 'error', 'message': 'Cliente não possui email cadastrado.'}), 400
+
+    produtos_recomendados = recommend_for_client_knn(client_id=id)
+    tipo_recomendacao = 'personalizada'
+    
+    if not produtos_recomendados:
+        produtos_recomendados = get_best_sellers(n=3)
+        tipo_recomendacao = 'fallback'
+
+    if not produtos_recomendados:
+        return jsonify({'status': 'error', 'message': 'Nenhum produto para recomendar.'}), 400
+
+    try:
+        enviar_email_recomendacao(cliente, produtos_recomendados, tipo_recomendacao)
+        return jsonify({'status': 'success', 'message': f'Email de recomendação enviado para {cliente.email}!'})
+    except Exception as e:
+        app.logger.error(f"Erro ao enviar email: {str(e)}")
+        return jsonify({'status': 'error', 'message': 'Erro interno ao enviar o email.'}), 500
 
 ######################################
 # Inicialização
