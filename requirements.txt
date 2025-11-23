@@ -12,6 +12,9 @@ numpy==1.26.4
 python-Levenshtein==0.25.1
 sendgrid==6.11.0
 joblib==1.4.2
+seaborn
+matplotlib
+psycopg2-binary
 
 # pip uninstall flask flask-sqlalchemy
 # pip install -r requirements.txt

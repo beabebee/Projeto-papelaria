@@ -16,6 +16,53 @@ content %}
     <a href="{{ url_for('listar_vendas') }}" class="botao-menu"> 💰 Vendas </a>
   </div>
 
+  <div class="analytics-section" style="margin-top: 40px; margin-bottom: 40px">
+    <h2>📊 Dashboard de Vendas</h2>
+
+    {% if grafico_vendas or grafico_produtos %}
+    <div
+      style="display: flex; flex-wrap: wrap; gap: 20px; justify-content: center"
+    >
+      {% if grafico_vendas %}
+      <div
+        class="chart-container"
+        style="flex: 1; min-width: 400px; text-align: center"
+      >
+        <img
+          src="data:image/png;base64,{{ grafico_vendas }}"
+          alt="Gráfico de Vendas por Dia"
+          style="
+            max-width: 100%;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 10px;
+          "
+        />
+      </div>
+      {% endif %} {% if grafico_produtos %}
+      <div
+        class="chart-container"
+        style="flex: 1; min-width: 400px; text-align: center"
+      >
+        <img
+          src="data:image/png;base64,{{ grafico_produtos }}"
+          alt="Gráfico Top Produtos"
+          style="
+            max-width: 100%;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 10px;
+          "
+        />
+      </div>
+      {% endif %}
+    </div>
+    {% else %}
+    <p style="text-align: center; color: #666">
+      Registre vendas para visualizar os gráficos analíticos.
+    </p>
+    {% endif %}
+  </div>
   <div class="best-sellers-section">
     <h2>🏆 Produtos Mais Vendidos</h2>
     {% if produtos_mais_vendidos %}

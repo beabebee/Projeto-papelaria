@@ -11,6 +11,13 @@ from chatbot_config import get_simple_bot_response, faqs_list
 from classification_engine import carregar_modelos
 from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail as SendGridMail
+import matplotlib
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
+import seaborn as sns
+import pandas as pd
+import io
+import base64
 
 kmeans_model, scaler_model = carregar_modelos()
 
@@ -280,18 +287,85 @@ def logout():
 ######################################
 # Rotas principais
 ######################################
+
+def gerar_grafico_vendas():
+    vendas = db.session.query(
+        Venda.data_venda, 
+        Venda.valor_total
+    ).all()
+    
+    if not vendas:
+        return None
+
+    df = pd.DataFrame(vendas, columns=['data', 'valor'])
+    df['data'] = pd.to_datetime(df['data']).dt.date
+    df_agrupado = df.groupby('data')['valor'].sum().reset_index()
+    df_agrupado['data'] = pd.to_datetime(df_agrupado['data']).dt.strftime('%d/%m/%Y')
+
+    sns.set_theme(style="whitegrid")
+    plt.figure(figsize=(10, 5))
+    
+    cores = sns.color_palette("blend:#007bff,#e83e8c", n_colors=len(df_agrupado))
+    
+    grafico = sns.barplot(x='data', y='valor', data=df_agrupado, palette=cores)
+    plt.title('Receita de Vendas por Dia', color='#333333')
+    plt.xlabel('Data')
+    plt.ylabel('Total (R$)')
+    plt.xticks(rotation=45)
+    plt.tight_layout()
+
+    img = io.BytesIO()
+    plt.savefig(img, format='png')
+    img.seek(0)
+    plt.close()
+    return base64.b64encode(img.getvalue()).decode('utf8')
+
+def gerar_grafico_produtos_top():
+    resultados = db.session.query(
+        Produto.nome, 
+        db.func.sum(Venda.valor_total).label('total_vendas')
+    ).join(Venda).group_by(Produto.nome).order_by(db.text('total_vendas DESC')).limit(5).all()
+
+    if not resultados:
+        return None
+
+    df = pd.DataFrame(resultados, columns=['produto', 'total'])
+
+    sns.set_theme(style="whitegrid")
+    plt.figure(figsize=(8, 5))
+    
+    cores = sns.color_palette("blend:#e83e8c,#007bff", n_colors=len(df))
+    
+    sns.barplot(x='total', y='produto', data=df, palette=cores, orient='h')
+    plt.title('Top 5 Produtos por Receita', color='#333333')
+    plt.xlabel('Receita Total (R$)')
+    plt.ylabel('')
+    plt.tight_layout()
+
+    img = io.BytesIO()
+    plt.savefig(img, format='png')
+    img.seek(0)
+    plt.close()
+
+    return base64.b64encode(img.getvalue()).decode('utf8')
+
+
 @app.route('/')
 @login_required
 def home():
     from recommendation_engine import get_best_sellers
-    # Busca os 5 produtos mais vendidos
+    
     produtos_mais_vendidos = get_best_sellers(n=6)
     
-    # Envia a lista para o template
+    grafico_vendas_img = gerar_grafico_vendas()
+    grafico_top_produtos_img = gerar_grafico_produtos_top()
+    
     return render_template('index.html', 
                          titulo="Papelaria Arte & Papel",
                          mensagem="Bem-vindo ao sistema de gerenciamento!",
-                         produtos_mais_vendidos=produtos_mais_vendidos)
+                         produtos_mais_vendidos=produtos_mais_vendidos,
+                         grafico_vendas=grafico_vendas_img,
+                         grafico_produtos=grafico_top_produtos_img)
 
 # Rotas de Produtos
 @app.route('/produtos')
